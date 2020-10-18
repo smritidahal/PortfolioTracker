@@ -1,0 +1,33 @@
+﻿@page "/CreatePortfolio"
+
+@using PortfolioTracker.Services
+@using PortfolioTracker.ViewModels
+@inject IStockDataService StockDataService
+
+
+@*@if (forecasts == null)
+{
+    <p><em>Loading...</em></p>
+}*@
+@*else
+{*@
+<RadzenTextBox @bind-Value="ticker"/>
+<RadzenButton Click="@(GetStockData)"/>
+<label>Current Price: @currentPrice</label>
+@*}*@
+
+@code {
+    float currentPrice = 0;
+    string ticker = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+    }
+
+    private async void GetStockData()
+    {
+        Quote stockInfo = await StockDataService.GetStockDataAsync(ticker);
+        currentPrice = stockInfo.c;
+        this.StateHasChanged();
+    }
+}
