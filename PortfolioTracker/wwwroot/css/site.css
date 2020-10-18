@@ -42,6 +42,11 @@ app {
     color: red;
 }
 
+.addBtn{
+    width:120px;
+    margin-bottom: 10px;
+}
+
 #blazor-error-ui {
     background: lightyellow;
     bottom: 0;

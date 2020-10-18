@@ -2,32 +2,140 @@
 
 @using PortfolioTracker.Services
 @using PortfolioTracker.ViewModels
+@using PortfolioTracker.Data
 @inject IStockDataService StockDataService
 
+<RadzenButton ButtonStyle="ButtonStyle.Light" class="addBtn" Click="@InsertRow"> Add <RadzenIcon Icon="add_circle_outline" Style="color:dimgrey; font-size:medium" /></RadzenButton>
+<RadzenButton Icon="add_circle_outline" style="margin-bottom: 10px" Text="Add" Click="@InsertRow" />
 
-@*@if (forecasts == null)
-{
-    <p><em>Loading...</em></p>
-}*@
-@*else
-{*@
-<RadzenTextBox @bind-Value="ticker"/>
-<RadzenButton Click="@(GetStockData)"/>
-<label>Current Price: @currentPrice</label>
-@*}*@
+<RadzenGrid @ref="stocksGrid" AllowFiltering="true" AllowPaging="true" PageSize="20" AllowSorting="true" EditMode="DataGridEditMode.Single"
+            Data="@stocks" TItem="StockData" RowUpdate="@OnUpdateRow" RowCreate="@OnCreateRow">
+    <Columns>
+        <RadzenGridColumn Width="200px" TItem="StockData" Property="Ticker" Title="Ticker">
+            <EditTemplate Context="stock">
+                <RadzenTextBox @bind-Value="stock.Ticker" Style="width:100%" />
+            </EditTemplate>
+        </RadzenGridColumn>
 
+        <RadzenGridColumn Width="150px" TItem="StockData" Property="NumShares" Title="Quantity">
+            <EditTemplate Context="stock">
+                <RadzenNumeric TValue="float" @bind-Value="stock.NumShares" Style="width:100%" />
+            </EditTemplate>
+        </RadzenGridColumn>
+
+        <RadzenGridColumn Width="200px" TItem="StockData" Property="BuyPrice" Title="Price per Share">
+            <EditTemplate Context="stock">
+                <RadzenNumeric TValue="float" @bind-Value="stock.BuyPrice" Style="width:100%" />
+            </EditTemplate>
+        </RadzenGridColumn>
+
+        <RadzenGridColumn Width="250px" TItem="StockData" Property="BuyDate" Title="Purchase Date">
+            <Template Context="stock">
+                @String.Format("{0:d}", stock.BuyDate)
+            </Template>
+            <EditTemplate Context="stock">
+                <RadzenDatePicker @bind-Value="stock.BuyDate" Style="width:100%" />
+            </EditTemplate>
+        </RadzenGridColumn>
+
+        <RadzenGridColumn TItem="StockData" Context="EditSaveCloseContext" Bubble="false" Filterable="false" Sortable="false" TextAlign="TextAlign.Center" Width="100px">
+            <Template Context="stock">
+                <RadzenButton Icon="edit" Size="ButtonSize.Small" Click="@(args => EditRow(stock))">
+                </RadzenButton>
+            </Template>
+            <EditTemplate Context="stock">
+                <RadzenButton Icon="save" Size="ButtonSize.Small" Click="@((args) => SaveRow(stock))">
+                </RadzenButton>
+                <RadzenButton Icon="cancel" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Secondary" Click="@((args) => CancelEdit(stock))">
+                </RadzenButton>
+            </EditTemplate>
+        </RadzenGridColumn>
+        <RadzenGridColumn TItem="StockData" Context="order" Bubble="false" Filterable="false" Sortable="false" TextAlign="TextAlign.Center" Width="70px">
+            <Template Context="stock">
+                <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="close" Size="ButtonSize.Small" Click="@(args => DeleteRow(stock))">
+                </RadzenButton>
+            </Template>
+            <EditTemplate Context="stock">
+                <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="close" Size="ButtonSize.Small" Click="@(args => DeleteRow(stock))">
+                </RadzenButton>
+            </EditTemplate>
+        </RadzenGridColumn>
+    </Columns>
+</RadzenGrid>
 @code {
-    float currentPrice = 0;
-    string ticker = "";
+    private IList<StockData> stocks;
+    RadzenGrid<StockData> stocksGrid;
 
     protected override async Task OnInitializedAsync()
     {
     }
 
-    private async void GetStockData()
+    private async void GetStockData(string ticker)
     {
         Quote stockInfo = await StockDataService.GetStockDataAsync(ticker);
-        currentPrice = stockInfo.c;
-        this.StateHasChanged();
+    }
+
+    void EditRow(StockData stock)
+    {
+        stocksGrid.EditRow(stock);
+    }
+
+    void SaveRow(StockData stock)
+    {
+        stocksGrid.UpdateRow(stock);
+    }
+
+    void CancelEdit(StockData stock)
+    {
+        stocksGrid.CancelEditRow(stock);
+    }
+
+    void DeleteRow(StockData stock)
+    {
+        if (stocks.Contains(stock))
+        {
+            //dbContext.Remove<Order>(stock);
+
+            // For demo purposes only
+            stocks.Remove(stock);
+
+            // For production
+            //dbContext.SaveChanges();
+
+            stocksGrid.Reload();
+        }
+        else
+        {
+            stocksGrid.CancelEditRow(stock);
+        }
+    }
+
+    void InsertRow()
+    {
+        stocksGrid.InsertRow(new StockData());
+    }
+
+    void OnCreateRow(StockData stock)
+    {
+        //    dbContext.Add(order);
+
+        //    // For demo purposes only
+        //    order.Customer = dbContext.Customers.Find(order.CustomerID);
+        //    order.Employee = dbContext.Employees.Find(order.EmployeeID);
+
+        //    // For production
+        //    //dbContext.SaveChanges();
+    }
+
+    void OnUpdateRow(StockData stock)
+    {
+        //    dbContext.Update(order);
+
+        //    // For demo purposes only
+        //    order.Customer = dbContext.Customers.Find(order.CustomerID);
+        //    order.Employee = dbContext.Employees.Find(order.EmployeeID);
+
+        //    // For production
+        //    //dbContext.SaveChanges();
     }
 }
