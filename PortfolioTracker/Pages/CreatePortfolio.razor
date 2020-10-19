@@ -2,43 +2,34 @@
 
 @using PortfolioTracker.Services
 @using PortfolioTracker.ViewModels
-@using PortfolioTracker.Data
+@using PortfolioTracker.Database.DataModels
+
 @inject IStockDataService StockDataService
 
 <RadzenButton ButtonStyle="ButtonStyle.Light" class="addBtn" Click="@InsertRow"> Add <RadzenIcon Icon="add_circle_outline" Style="color:dimgrey; font-size:medium" /></RadzenButton>
-<RadzenButton Icon="add_circle_outline" style="margin-bottom: 10px" Text="Add" Click="@InsertRow" />
 
 <RadzenGrid @ref="stocksGrid" AllowFiltering="true" AllowPaging="true" PageSize="20" AllowSorting="true" EditMode="DataGridEditMode.Single"
-            Data="@stocks" TItem="StockData" RowUpdate="@OnUpdateRow" RowCreate="@OnCreateRow">
+            Data="@stocks" TItem="TickerData" RowUpdate="@OnUpdateRow" RowCreate="@OnCreateRow">
     <Columns>
-        <RadzenGridColumn Width="200px" TItem="StockData" Property="Ticker" Title="Ticker">
+        <RadzenGridColumn Width="200px" TItem="TickerData" Property="Ticker" Title="Ticker">
             <EditTemplate Context="stock">
                 <RadzenTextBox @bind-Value="stock.Ticker" Style="width:100%" />
             </EditTemplate>
         </RadzenGridColumn>
 
-        <RadzenGridColumn Width="150px" TItem="StockData" Property="NumShares" Title="Quantity">
+        <RadzenGridColumn Width="150px" TItem="TickerData" Property="Quantity" Title="Quantity">
             <EditTemplate Context="stock">
-                <RadzenNumeric TValue="float" @bind-Value="stock.NumShares" Style="width:100%" />
+                <RadzenNumeric TValue="float" @bind-Value="stock.Quantity" Style="width:100%" />
             </EditTemplate>
         </RadzenGridColumn>
 
-        <RadzenGridColumn Width="200px" TItem="StockData" Property="BuyPrice" Title="Price per Share">
+        <RadzenGridColumn Width="200px" TItem="TickerData" Property="CostPerShare" Title="Price per Share">
             <EditTemplate Context="stock">
-                <RadzenNumeric TValue="float" @bind-Value="stock.BuyPrice" Style="width:100%" />
+                <RadzenNumeric TValue="double" @bind-Value="stock.CostPerShare" Style="width:100%" />
             </EditTemplate>
         </RadzenGridColumn>
 
-        <RadzenGridColumn Width="250px" TItem="StockData" Property="BuyDate" Title="Purchase Date">
-            <Template Context="stock">
-                @String.Format("{0:d}", stock.BuyDate)
-            </Template>
-            <EditTemplate Context="stock">
-                <RadzenDatePicker @bind-Value="stock.BuyDate" Style="width:100%" />
-            </EditTemplate>
-        </RadzenGridColumn>
-
-        <RadzenGridColumn TItem="StockData" Context="EditSaveCloseContext" Bubble="false" Filterable="false" Sortable="false" TextAlign="TextAlign.Center" Width="100px">
+        <RadzenGridColumn TItem="TickerData" Context="EditSaveCloseContext" Bubble="false" Filterable="false" Sortable="false" TextAlign="TextAlign.Center" Width="100px">
             <Template Context="stock">
                 <RadzenButton Icon="edit" Size="ButtonSize.Small" Click="@(args => EditRow(stock))">
                 </RadzenButton>
@@ -50,7 +41,7 @@
                 </RadzenButton>
             </EditTemplate>
         </RadzenGridColumn>
-        <RadzenGridColumn TItem="StockData" Context="order" Bubble="false" Filterable="false" Sortable="false" TextAlign="TextAlign.Center" Width="70px">
+        <RadzenGridColumn TItem="TickerData" Context="order" Bubble="false" Filterable="false" Sortable="false" TextAlign="TextAlign.Center" Width="70px">
             <Template Context="stock">
                 <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="close" Size="ButtonSize.Small" Click="@(args => DeleteRow(stock))">
                 </RadzenButton>
@@ -62,9 +53,10 @@
         </RadzenGridColumn>
     </Columns>
 </RadzenGrid>
+
 @code {
-    private IList<StockData> stocks;
-    RadzenGrid<StockData> stocksGrid;
+    private IList<TickerData> stocks;
+    RadzenGrid<TickerData> stocksGrid;
 
     protected override async Task OnInitializedAsync()
     {
@@ -75,22 +67,22 @@
         Quote stockInfo = await StockDataService.GetStockDataAsync(ticker);
     }
 
-    void EditRow(StockData stock)
+    void EditRow(TickerData stock)
     {
         stocksGrid.EditRow(stock);
     }
 
-    void SaveRow(StockData stock)
+    void SaveRow(TickerData stock)
     {
         stocksGrid.UpdateRow(stock);
     }
 
-    void CancelEdit(StockData stock)
+    void CancelEdit(TickerData stock)
     {
         stocksGrid.CancelEditRow(stock);
     }
 
-    void DeleteRow(StockData stock)
+    void DeleteRow(TickerData stock)
     {
         if (stocks.Contains(stock))
         {
@@ -112,10 +104,10 @@
 
     void InsertRow()
     {
-        stocksGrid.InsertRow(new StockData());
+        stocksGrid.InsertRow(new TickerData());
     }
 
-    void OnCreateRow(StockData stock)
+    void OnCreateRow(TickerData stock)
     {
         //    dbContext.Add(order);
 
@@ -127,7 +119,7 @@
         //    //dbContext.SaveChanges();
     }
 
-    void OnUpdateRow(StockData stock)
+    void OnUpdateRow(TickerData stock)
     {
         //    dbContext.Update(order);
 

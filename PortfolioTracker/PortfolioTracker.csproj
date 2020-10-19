@@ -10,4 +10,8 @@
     <PackageReference Include="Radzen.Blazor" Version="2.15.14" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\PortfolioTracker.Database\PortfolioTracker.Database.csproj" />
+  </ItemGroup>
+
 </Project>

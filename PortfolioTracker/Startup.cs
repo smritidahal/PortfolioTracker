@@ -3,13 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using PortfolioTracker.Services;
+using PortfolioTracker.DatabaseConnect;
+using PortfolioTracker.Database.DataModels;
+using PortfolioTracker.Database.Repositories;
+using PortfolioTracker.Database.Services;
 
 namespace PortfolioTracker
 {
@@ -32,6 +34,8 @@ namespace PortfolioTracker
                 {
                     client.BaseAddress = new Uri("https://finnhub.io/api/v1/");
             });
+            //register Database
+            services.AddDatabaseRepositories(Configuration).GetAwaiter().GetResult();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -40,6 +44,7 @@ namespace PortfolioTracker
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+                SeedTestData(app);
             }
             else
             {
@@ -58,6 +63,16 @@ namespace PortfolioTracker
                 endpoints.MapBlazorHub();
                 endpoints.MapFallbackToPage("/_Host");
             });
+        }
+
+        private void SeedTestData(IApplicationBuilder app)
+        {
+            var tickerRepo = app.ApplicationServices.GetService<IRepository<TickerData>>();
+            var authorizedTenants = tickerRepo.GetList().GetAwaiter().GetResult();
+            if (!authorizedTenants.Any())
+            {
+                tickerRepo.AddUpdate(new TickerData() {Name = "Apple", Ticker = "AAPL", Quantity = 18, CostPerShare = 113.44, CurrentPrice = 118.72, IsSold = false, Sector = "Technology", Industry = "Consumer Electronics", Id = Guid.NewGuid().ToString() }).GetAwaiter().GetResult();
+            }
         }
     }
 }
