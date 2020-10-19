@@ -1,0 +1,21 @@
+﻿@using PortfolioTracker.Services
+@using PortfolioTracker.ViewModels
+@using PortfolioTracker.Database.DataModels
+@inject IStockDataService StockDataService
+
+
+<div class="row">
+    <div class="col-md-12">
+        <RadzenTextBox @bind-Value="portfolioName" Placeholder="Portfolio Name"/>
+        <RadzenButton Text="Create" ButtonStyle="ButtonStyle.Light" Click="CreateNewPortfolio" />
+    </div>
+</div>
+
+@code {
+    string portfolioName { get; set; }
+
+    async Task CreateNewPortfolio()
+    {
+        //add to db
+    }
+}

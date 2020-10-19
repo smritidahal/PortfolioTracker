@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Radzen;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -36,6 +37,8 @@ namespace PortfolioTracker
             });
             //register Database
             services.AddDatabaseRepositories(Configuration).GetAwaiter().GetResult();
+            //Radzen dialog service
+            services.AddScoped<DialogService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

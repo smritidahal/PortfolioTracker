@@ -1,0 +1,18 @@
+﻿@page "/MyPortfolios"
+
+@using PortfolioTracker.Pages.PortfolioViews
+@inject DialogService dialogService
+
+<div class="row">
+    <div class="col-md-12">
+        <RadzenButton Text="Create New Portfolio" ButtonStyle="ButtonStyle.Light" Click="@(args => dialogService.Open<CreatePortfolioView>("Create New Portfolio", null, new DialogOptions() { Width = "500px", Height="600px"}))" />
+    </div>
+</div>
+
+@code {
+
+    void CreateNewPortfolio()
+    {
+
+    }
+}

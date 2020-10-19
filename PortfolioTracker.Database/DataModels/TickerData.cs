@@ -1,5 +1,5 @@
 ﻿using Newtonsoft.Json;
-using System;
+using Newtonsoft.Json.Converters;
 
 namespace PortfolioTracker.Database.DataModels
 {
@@ -31,5 +31,9 @@ namespace PortfolioTracker.Database.DataModels
 
         [JsonProperty("isSold")]
         public bool IsSold { get; set; }
+
+        [JsonProperty("portfolioName")]
+        [JsonConverter(typeof(StringEnumConverter))]
+        public Portfolios PortfolioName { get; set; }
     }
 }
