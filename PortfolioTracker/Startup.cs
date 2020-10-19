@@ -70,11 +70,11 @@ namespace PortfolioTracker
 
         private void SeedTestData(IApplicationBuilder app)
         {
-            var tickerRepo = app.ApplicationServices.GetService<IRepository<TickerData>>();
+            var tickerRepo = app.ApplicationServices.GetService<IRepository<Equity>>();
             var authorizedTenants = tickerRepo.GetList().GetAwaiter().GetResult();
             if (!authorizedTenants.Any())
             {
-                tickerRepo.AddUpdate(new TickerData() {Name = "Apple", Ticker = "AAPL", Quantity = 18, CostPerShare = 113.44, CurrentPrice = 118.72, IsSold = false, Sector = "Technology", Industry = "Consumer Electronics", Id = Guid.NewGuid().ToString() }).GetAwaiter().GetResult();
+                tickerRepo.AddUpdate(new Equity() {Name = "Apple", Symbol = "AAPL", Quantity = 18, CostPerShare = 113.44, CurrentPrice = 118.72, IsSold = false, Sector = "Technology", Industry = "Consumer Electronics", Id = Guid.NewGuid().ToString() }).GetAwaiter().GetResult();
             }
         }
     }

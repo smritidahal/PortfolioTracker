@@ -6,7 +6,7 @@ namespace PortfolioTracker.Database.DataModels
 {
     public static class ContainerNames
     {
-        public const string TickerData = "TickerData";
+        public const string Equity = "Equity";
         public const string Portfolio = "Portfolio";
     }
 }

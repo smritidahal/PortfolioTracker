@@ -37,12 +37,12 @@ namespace PortfolioTracker.DatabaseConnect
         private static async Task ConfigureTickerDataRepo(IServiceCollection services, CosmosClient client, string databaseName)
         {
             // Create TickerData container if it does not exist
-            await client.GetDatabase(databaseName).DefineContainer(name: ContainerNames.TickerData, partitionKeyPath: "/id")
+            await client.GetDatabase(databaseName).DefineContainer(name: ContainerNames.Equity, partitionKeyPath: "/id")
                                                     .CreateIfNotExistsAsync();
 
             //register data service
-            services.AddSingleton((IDataService<TickerData>)new CosmosDataService<TickerData>(client, databaseName, ContainerNames.TickerData));
-            services.AddSingleton<IRepository<TickerData>, TickerDataRepository>();
+            services.AddSingleton((IDataService<Equity>)new CosmosDataService<Equity>(client, databaseName, ContainerNames.Equity));
+            services.AddSingleton<IRepository<Equity>, EquityRepository>();
         }
 
         private static async Task ConfigurePortfolioDataRepo(IServiceCollection services, CosmosClient client, string databaseName)

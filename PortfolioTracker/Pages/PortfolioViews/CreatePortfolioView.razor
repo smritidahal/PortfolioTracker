@@ -1,21 +1,43 @@
-﻿@using PortfolioTracker.Services
-@using PortfolioTracker.ViewModels
-@using PortfolioTracker.Database.DataModels
-@inject IStockDataService StockDataService
-
+﻿@using PortfolioTracker.Database.DataModels
+@inject DialogService dialogService
+@inject PortfolioTracker.Database.Repositories.IRepository<Portfolio> PortfolioRepository
 
 <div class="row">
     <div class="col-md-12">
-        <RadzenTextBox @bind-Value="portfolioName" Placeholder="Portfolio Name"/>
+        <RadzenTextBox @bind-Value="portfolioName" Placeholder="Portfolio Name" Style="width:100%; margin-bottom:10px" />
         <RadzenButton Text="Create" ButtonStyle="ButtonStyle.Light" Click="CreateNewPortfolio" />
+        <RadzenButton Text="Cancel" ButtonStyle="ButtonStyle.Secondary" Click="@((args) => dialogService.Close(false))" />
+        @if (portfolioExists)
+        {
+            <p class="warning-message">
+                <RadzenIcon Icon="warning" Style="font-size:small" />
+                A portfolio with this name already exists. Please give a different name.
+            </p>
+        }
     </div>
 </div>
 
 @code {
+
     string portfolioName { get; set; }
+    bool portfolioExists { get; set; }
 
     async Task CreateNewPortfolio()
     {
+        portfolioExists = false;
+        this.StateHasChanged();
+
         //add to db
+        portfolioExists = (await PortfolioRepository.GetList()).Any(p => p.Name == portfolioName);
+        if (!portfolioExists)
+        {
+            await PortfolioRepository.AddUpdate(new Portfolio()
+            {
+                Name = portfolioName,
+                Id = Guid.NewGuid().ToString()
+            });
+            dialogService.Close(true);
+        }
+        //TODO: name exists
     }
 }

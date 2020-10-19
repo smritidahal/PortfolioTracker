@@ -1,15 +1,17 @@
 ﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
 
 namespace PortfolioTracker.Database.DataModels
 {
-    public class TickerData : CosmosData
+    public class Equity : CosmosData
     {
         [JsonProperty("name")]
         public string Name { get; set; }
 
-        [JsonProperty("ticker")]
-        public string Ticker { get; set; }
+        [JsonProperty("symbol")]
+        public string Symbol { get; set; }
+
+        [JsonProperty("equityType")]
+        public EquityType EquityType { get; set; }
 
         [JsonProperty("quantity")]
         public float Quantity { get; set; }
@@ -33,7 +35,6 @@ namespace PortfolioTracker.Database.DataModels
         public bool IsSold { get; set; }
 
         [JsonProperty("portfolioName")]
-        [JsonConverter(typeof(StringEnumConverter))]
-        public Portfolios PortfolioName { get; set; }
+        public string PortfolioName { get; set; }
     }
 }

@@ -1,13 +1,10 @@
 ﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
-
 namespace PortfolioTracker.Database.DataModels
 {
     public class Portfolio : CosmosData
     {
         [JsonProperty("name")]
-        [JsonConverter(typeof(StringEnumConverter))]
-        public Portfolios Name { get; set; }
+        public string Name { get; set; }
 
         [JsonProperty("totalValue")]
         public double TotalValue { get; set; }
