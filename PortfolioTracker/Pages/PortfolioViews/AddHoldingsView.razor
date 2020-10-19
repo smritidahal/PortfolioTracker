@@ -4,7 +4,7 @@
 
 @inject IStockDataService StockDataService
 
-<RadzenButton ButtonStyle="ButtonStyle.Light" class="addBtn" Click="@InsertRow"> Add <RadzenIcon Icon="add_circle_outline" Style="color:dimgrey; font-size:medium" /></RadzenButton>
+<RadzenButton ButtonStyle="ButtonStyle.Light" class="btnSmall" Click="@InsertRow"> Add <RadzenIcon Icon="add_circle_outline" Style="color:dimgrey; font-size:medium" /></RadzenButton>
 
 <RadzenGrid @ref="stocksGrid" AllowFiltering="true" AllowPaging="true" PageSize="20" AllowSorting="true" EditMode="DataGridEditMode.Single"
             Data="@holdings" TItem="Equity" RowUpdate="@OnUpdateRow" RowCreate="@OnCreateRow">

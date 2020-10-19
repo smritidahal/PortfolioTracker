@@ -1,5 +1,6 @@
-﻿<h3>PortfolioHoldingsView</h3>
+﻿@page "/Portfolio/{PortfolioName}"
 
 @code {
-
+    [Parameter]
+    public string PortfolioName { get; set; }
 }

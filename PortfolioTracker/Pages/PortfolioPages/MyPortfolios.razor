@@ -1,18 +1,45 @@
 ﻿@page "/MyPortfolios"
 
 @using PortfolioTracker.Pages.PortfolioViews
+@using PortfolioTracker.Database.DataModels
+@inject PortfolioTracker.Database.Repositories.IRepository<Portfolio> PortfolioRepository
 @inject DialogService dialogService
+@inject NavigationManager uriHelper
 
-<div class="row">
-    <div class="col-md-12">
-        <RadzenButton Text="Create New Portfolio" ButtonStyle="ButtonStyle.Light" Click="@(args => dialogService.Open<CreatePortfolioView>("Create A New Portfolio", null, new DialogOptions() { Width = "600px", Height="200px"}))" />
-    </div>
+
+@if (portfolios == null || portfolios.Count() < 1)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <RadzenDataList WrapItems="true" AllowPaging="false" Data="portfolios" TItem="Portfolio">
+        <Template Context="portfolio">
+            <RadzenCard Style="width:300px; height:300px">
+                <h2>@portfolio.Name</h2>
+                <RadzenButton Text="View Portfolio Details" ButtonStyle="ButtonStyle.Light" Click="@(args => ViewPortfolio(portfolio.Name))" class="btnMedium" />
+            </RadzenCard>
+        </Template>
+    </RadzenDataList>
+
+}
+<div class="float-md-right">
+    <RadzenButton Text="Create New Portfolio" Style="margin-right:1rem" ButtonStyle="ButtonStyle.Light" class="btnMedium" 
+                  Click="@(args => dialogService.Open<CreatePortfolioView>("Create A New Portfolio", null, new DialogOptions() { Width = "600px", Height = "200px" }))" />
 </div>
+
 
 @code {
 
-    void CreateNewPortfolio()
-    {
+    IEnumerable<Portfolio> portfolios = new List<Portfolio>();
 
+    protected override async Task OnInitializedAsync()
+    {
+        portfolios = await PortfolioRepository.GetList();
+    }
+
+    void ViewPortfolio(string portfolioName)
+    {
+        uriHelper.NavigateTo($"/Portfolio/{portfolioName}");
     }
 }

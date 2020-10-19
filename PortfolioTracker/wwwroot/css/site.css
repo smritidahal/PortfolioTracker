@@ -45,9 +45,13 @@ app {
     margin-top: 10px;
 }
 
-.addBtn{
+.btnSmall{
     width:120px;
     margin-bottom: 10px;
+}
+
+.btnMedium {
+    width: 250px;
 }
 
 #blazor-error-ui {
