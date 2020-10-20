@@ -40,6 +40,11 @@ else
                     <RadzenDropDown @bind-Value="equity.EquityType" Style="width:100%" TextProperty="Text" ValueProperty="Value"
                                     Data="@(Enum.GetValues(typeof(EquityType)).Cast<EquityType>().Select(equity => new { Text = $"{equity}", Value = equity }))" />
                 </EditTemplate>
+                <FilterTemplate Context="equity">
+                    <RadzenDropDown @bind-Value="selectedEquityType" TextProperty="Text" ValueProperty="Value" Style="width:100%"
+                                    Data="@(Enum.GetValues(typeof(EquityType)).Cast<EquityType>().Select(equity => new { Text = $"{equity}", Value = equity }))"
+                                    Change="@(args => FilterEquityType(args))" />
+                </FilterTemplate>
             </RadzenGridColumn>
 
             <RadzenGridColumn Width="100px" TItem="Equity" Property="Quantity" Title="Quantity">
@@ -60,7 +65,11 @@ else
                 </Template>
             </RadzenGridColumn>
 
-            <RadzenGridColumn Width="200px" TItem="Equity" Property="Name" Title="Name" />
+            <RadzenGridColumn Width="200px" TItem="Equity" Property="Name" Title="Name">
+                <EditTemplate Context="equity">
+                    <RadzenTextBox @bind-Value="equity.Name" Style="width:100%" />
+                </EditTemplate>
+            </RadzenGridColumn>
 
             <RadzenGridColumn Width="100px" TItem="Equity" Property="CurrentPrice" Title="Current Price">
                 <Template Context="equity">
@@ -87,30 +96,31 @@ else
                 </Template>
             </RadzenGridColumn>
 
-            <RadzenGridColumn Width="150px" TItem="Equity" Property="Industry" Title="Industry" />
+            <RadzenGridColumn Width="150px" TItem="Equity" Property="Industry" Title="Industry">
+                <EditTemplate Context="equity">
+                    <RadzenTextBox @bind-Value="equity.Industry" Style="width:100%" />
+                </EditTemplate>
+            </RadzenGridColumn>
 
             <RadzenGridColumn TItem="Equity" Context="EditSaveCloseContext" Bubble="false" Filterable="false" Sortable="false" TextAlign="TextAlign.Center" Width="100px">
                 <Template Context="equity">
-                    <RadzenButton Icon="edit" Size="ButtonSize.Small" Click="@(async args => EditRow(equity))">
-                    </RadzenButton>
+                    <RadzenButton Icon="edit" Size="ButtonSize.Small" Click="@(async args => EditRow(equity))" />
                 </Template>
                 <EditTemplate Context="equity">
-                    <RadzenButton Icon="save" Size="ButtonSize.Small" Click="@(async args => SaveRow(equity))">
-                    </RadzenButton>
-                    <RadzenButton Icon="cancel" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Secondary" Click="@(async args => CancelEdit(equity))">
-                    </RadzenButton>
+                    <RadzenButton Icon="save" Size="ButtonSize.Small" Click="@(async args => SaveRow(equity))" />
+                    <RadzenButton Icon="cancel" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Secondary" Click="@(async args => CancelEdit(equity))" />
                 </EditTemplate>
             </RadzenGridColumn>
+
             <RadzenGridColumn TItem="Equity" Context="order" Bubble="false" Filterable="false" Sortable="false" TextAlign="TextAlign.Center" Width="70px">
                 <Template Context="equity">
-                    <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="close" Size="ButtonSize.Small" Click="@(async args => await DeleteRow(equity))">
-                    </RadzenButton>
+                    <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="close" Size="ButtonSize.Small" Click="@(async args => await DeleteRow(equity))" />
                 </Template>
                 <EditTemplate Context="equity">
-                    <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="close" Size="ButtonSize.Small" Click="@(async args => await DeleteRow(equity))">
-                    </RadzenButton>
+                    <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="close" Size="ButtonSize.Small" Click="@(async args => await DeleteRow(equity))" />
                 </EditTemplate>
             </RadzenGridColumn>
+
         </Columns>
     </RadzenGrid>
 }
@@ -126,6 +136,8 @@ else
     RadzenGrid<Equity> stocksGrid;
 
     private bool isEmpty { get; set; }
+
+    private EquityType selectedEquityType { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -226,8 +238,8 @@ else
         holdings.Remove(existingHolding);
         //update
         equity.CurrentPrice = eqInfo.CurrentPrice;
-        equity.Industry = eqInfo.Industry;
-        equity.Name = eqInfo.Name;
+        equity.Industry = existingHolding.Industry;
+        equity.Name = existingHolding.Name;
         Calculate(ref equity);
         holdings.Add(equity);
 
@@ -264,19 +276,24 @@ else
     async Task GetLatest()
     {
         var eqInfo = new EquityInfo();
+        var newHoldings = new List<Equity>();
         foreach (var holding in holdings)
         {
-            var existingHolding = holdings.FirstOrDefault(e => e.Symbol == holding.Symbol);
-            holdings.Remove(existingHolding);
-
             var equity = holding;
             eqInfo = await StockDataService.GetEquityInfo(equity.Symbol);
             equity.CurrentPrice = eqInfo.CurrentPrice;
             Calculate(ref equity);
-            holdings.Add(equity);
+            newHoldings.Add(equity);
         }
+        holdings = newHoldings;
         curPortfolio.Holdings = holdings;
         ReCalculate();
         await PortfolioRepository.AddUpdate(curPortfolio);
+    }
+
+    private void FilterEquityType(object args)
+    {
+        var portfolioHoldings = curPortfolio.Holdings;
+        holdings = portfolioHoldings.Where(h => h.EquityType == selectedEquityType).ToList();
     }
 }
