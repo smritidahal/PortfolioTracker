@@ -13,6 +13,8 @@ namespace PortfolioTracker.Database.DataModels
         [EnumMember(Value = "Warrant")]
         Warrant = 3,
         [EnumMember(Value = "Bond")]
-        Bond = 4
+        Bond = 4,
+        [EnumMember(Value = "Other")]
+        Other = 5
     }
 }

@@ -8,6 +8,8 @@ namespace PortfolioTracker.Services
 {
     public interface IStockDataService
     {
-        public Task<Quote> GetStockDataAsync(string ticker);
+        public Task<Quote> GetQuote(string ticker);
+        public Task<CompanyProfile> GetCompanyProfile (string ticker);
+        public Task<EquityInfo> GetEquityInfo(string ticker);
     }
 }

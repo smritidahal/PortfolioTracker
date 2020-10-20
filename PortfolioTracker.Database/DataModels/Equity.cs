@@ -2,7 +2,7 @@
 
 namespace PortfolioTracker.Database.DataModels
 {
-    public class Equity : CosmosData
+    public class Equity
     {
         [JsonProperty("name")]
         public string Name { get; set; }
@@ -22,19 +22,25 @@ namespace PortfolioTracker.Database.DataModels
         [JsonProperty("currentPrice")]
         public double CurrentPrice { get; set; }
 
+        [JsonProperty("totalCost")]
+        public double TotalCost { get; set; }
+
+        [JsonProperty("marketValue")]
+        public double MarketValue { get; set; }
+
+        [JsonProperty("gainLoss")]
+        public double GainLoss { get; set; }
+
+        [JsonProperty("PortfolioDiversity")]
+        public double PortfolioDiversity { get; set; }
+
         [JsonProperty("sellPrice")]
         public float SellPrice { get; set; }
-
-        [JsonProperty("sector")]
-        public string Sector { get; set; }
 
         [JsonProperty("industry")]
         public string Industry { get; set; }
 
         [JsonProperty("isSold")]
         public bool IsSold { get; set; }
-
-        [JsonProperty("portfolioName")]
-        public string PortfolioName { get; set; }
     }
 }

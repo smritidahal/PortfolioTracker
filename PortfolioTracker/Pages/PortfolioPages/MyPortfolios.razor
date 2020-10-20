@@ -7,7 +7,7 @@
 @inject NavigationManager uriHelper
 
 
-@if (portfolios == null || portfolios.Count() < 1)
+@if (portfolios == null)
 {
     <p><em>Loading...</em></p>
 }
@@ -23,8 +23,8 @@ else
     </RadzenDataList>
 
 }
-<div class="float-md-right">
-    <RadzenButton Text="Create New Portfolio" Style="margin-right:1rem" ButtonStyle="ButtonStyle.Light" class="btnMedium" 
+<div class="createButtonClass">
+    <RadzenButton Text="Create New Portfolio" Style="margin-right:1rem" ButtonStyle="ButtonStyle.Light" class="btnMedium"
                   Click="@(args => dialogService.Open<CreatePortfolioView>("Create A New Portfolio", null, new DialogOptions() { Width = "600px", Height = "200px" }))" />
 </div>
 
@@ -32,10 +32,15 @@ else
 @code {
 
     IEnumerable<Portfolio> portfolios = new List<Portfolio>();
-
+    private string createButtonClass { get; set; }
     protected override async Task OnInitializedAsync()
     {
         portfolios = await PortfolioRepository.GetList();
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        createButtonClass = portfolios.Count() < 1 ? "float-md-left" : "float-md-right";
     }
 
     void ViewPortfolio(string portfolioName)

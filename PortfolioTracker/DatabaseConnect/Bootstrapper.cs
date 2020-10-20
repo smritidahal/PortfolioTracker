@@ -28,21 +28,7 @@ namespace PortfolioTracker.DatabaseConnect
             await client.CreateDatabaseIfNotExistsAsync(databaseName);
 
             // register TickerData Repository
-            await ConfigureTickerDataRepo(services, client, databaseName);
-
-            // register TickerData Repository
             await ConfigurePortfolioDataRepo(services, client, databaseName);
-        }
-
-        private static async Task ConfigureTickerDataRepo(IServiceCollection services, CosmosClient client, string databaseName)
-        {
-            // Create TickerData container if it does not exist
-            await client.GetDatabase(databaseName).DefineContainer(name: ContainerNames.Equity, partitionKeyPath: "/id")
-                                                    .CreateIfNotExistsAsync();
-
-            //register data service
-            services.AddSingleton((IDataService<Equity>)new CosmosDataService<Equity>(client, databaseName, ContainerNames.Equity));
-            services.AddSingleton<IRepository<Equity>, EquityRepository>();
         }
 
         private static async Task ConfigurePortfolioDataRepo(IServiceCollection services, CosmosClient client, string databaseName)

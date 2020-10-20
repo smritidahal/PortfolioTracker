@@ -1,4 +1,6 @@
 ﻿using Newtonsoft.Json;
+using System.Collections.Generic;
+
 namespace PortfolioTracker.Database.DataModels
 {
     public class Portfolio : CosmosData
@@ -11,5 +13,8 @@ namespace PortfolioTracker.Database.DataModels
 
         [JsonProperty("netValue")]
         public double NetValue { get; set; }
+
+        [JsonProperty("holdings")]
+        public IList<Equity> Holdings { get; set; }
     }
 }

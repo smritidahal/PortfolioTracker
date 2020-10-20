@@ -47,7 +47,7 @@ namespace PortfolioTracker
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-                SeedTestData(app);
+                //SeedTestData(app);
             }
             else
             {
@@ -74,7 +74,7 @@ namespace PortfolioTracker
             var authorizedTenants = tickerRepo.GetList().GetAwaiter().GetResult();
             if (!authorizedTenants.Any())
             {
-                tickerRepo.AddUpdate(new Equity() {Name = "Apple", Symbol = "AAPL", Quantity = 18, CostPerShare = 113.44, CurrentPrice = 118.72, IsSold = false, Sector = "Technology", Industry = "Consumer Electronics", Id = Guid.NewGuid().ToString() }).GetAwaiter().GetResult();
+                tickerRepo.AddUpdate(new Equity() {Name = "Apple", Symbol = "AAPL", Quantity = 18, CostPerShare = 113.44, CurrentPrice = 118.72, IsSold = false, Industry = "Consumer Electronics"}).GetAwaiter().GetResult();
             }
         }
     }

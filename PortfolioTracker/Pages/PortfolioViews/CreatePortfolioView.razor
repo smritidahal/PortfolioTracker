@@ -34,7 +34,8 @@
             await PortfolioRepository.AddUpdate(new Portfolio()
             {
                 Name = portfolioName,
-                Id = Guid.NewGuid().ToString()
+                Id = Guid.NewGuid().ToString(),
+                Holdings = new List<Equity>()
             });
             dialogService.Close(true);
         }

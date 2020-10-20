@@ -4,10 +4,10 @@ namespace PortfolioTracker.ViewModels
 {
     public class Quote
     {
-        public double o { get; set; } //open
-        public double h { get; set; } //high
-        public double l { get; set; } //low
-        public double c { get; set; } //current
-        public double pc { get; set; } //previous close
+        public double O { get; set; } //open
+        public double H { get; set; } //high
+        public double L { get; set; } //low
+        public double C { get; set; } //current
+        public double Pc { get; set; } //previous close
     }
 }
