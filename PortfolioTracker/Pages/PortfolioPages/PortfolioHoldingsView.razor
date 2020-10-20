@@ -9,11 +9,12 @@
 <h2>Portfolio: @PortfolioName</h2>
 @if (curPortfolio != null)
 {
-    <h3>Total Value: $@curPortfolio.TotalValue</h3>
-    <h3>Total Profit/Loss: $@curPortfolio.NetValue</h3>
+    <h3>Total Value: @String.Format("{0:C2}", curPortfolio.TotalValue)</h3>
+    <h3>Total Profit/Loss: @String.Format("{0:C2}", curPortfolio.NetValue)@String.Format("({0:P})", curPortfolio.Gain)</h3>
 }
 
 <RadzenButton ButtonStyle="ButtonStyle.Light" class="btnSmall" Click="@InsertRow"> Add <RadzenIcon Icon="add_circle_outline" Style="color:dimgrey; font-size:medium" /></RadzenButton>
+<RadzenButton ButtonStyle="ButtonStyle.Secondary" class="btnSmall" Click="@GetLatest"><RadzenIcon Icon="autorenew" Style="color:white; font-size:medium" /></RadzenButton>
 
 @if (curPortfolio == null)
 {
@@ -34,7 +35,7 @@ else
                 </EditTemplate>
             </RadzenGridColumn>
 
-            <RadzenGridColumn Width="150px" TItem="Equity" Property="EquityType" Title="Equity Type">
+            <RadzenGridColumn Width="100px" TItem="Equity" Property="EquityType" Title="Equity Type">
                 <EditTemplate Context="equity">
                     <RadzenDropDown @bind-Value="equity.EquityType" Style="width:100%" TextProperty="Text" ValueProperty="Value"
                                     Data="@(Enum.GetValues(typeof(EquityType)).Cast<EquityType>().Select(equity => new { Text = $"{equity}", Value = equity }))" />
@@ -45,21 +46,35 @@ else
                 <EditTemplate Context="equity">
                     <RadzenNumeric TValue="float" @bind-Value="equity.Quantity" Style="width:100%" />
                 </EditTemplate>
+                <Template Context="equity">
+                    @String.Format("{0:F}", equity.Quantity)
+                </Template>
             </RadzenGridColumn>
 
-            <RadzenGridColumn Width="150px" TItem="Equity" Property="CostPerShare" Title="Price per Share">
+            <RadzenGridColumn Width="100px" TItem="Equity" Property="CostPerShare" Title="Price/Share">
                 <EditTemplate Context="equity">
                     <RadzenNumeric TValue="double" @bind-Value="equity.CostPerShare" Style="width:100%" />
                 </EditTemplate>
+                <Template Context="equity">
+                    @String.Format("{0:C2}", equity.CostPerShare)
+                </Template>
             </RadzenGridColumn>
 
-            <RadzenGridColumn Width="150px" TItem="Equity" Property="Name" Title="Name" />
+            <RadzenGridColumn Width="200px" TItem="Equity" Property="Name" Title="Name" />
 
-            <RadzenGridColumn Width="150px" TItem="Equity" Property="CurrentPrice" Title="Current Price" />
+            <RadzenGridColumn Width="100px" TItem="Equity" Property="CurrentPrice" Title="Current Price">
+                <Template Context="equity">
+                    @String.Format("{0:C2}", equity.CurrentPrice)
+                </Template>
+            </RadzenGridColumn>
 
-            <RadzenGridColumn Width="150px" TItem="Equity" Property="MarketValue" Title="Market Value" />
+            <RadzenGridColumn Width="100px" TItem="Equity" Property="MarketValue" Title="Market Value">
+                <Template Context="equity">
+                    @String.Format("{0:C2}", equity.MarketValue)
+                </Template>
+            </RadzenGridColumn>
 
-            <RadzenGridColumn Width="150px" TItem="Equity" Property="GainLoss" Title="Gain/Loss">
+            <RadzenGridColumn Width="100px" TItem="Equity" Property="GainLoss" Title="Gain/Loss">
                 <Template Context="equity">
                     @if (equity.GainLoss > 0)
                     {
@@ -116,7 +131,7 @@ else
     {
         var allPortfolios = await PortfolioRepository.GetList();
         curPortfolio = allPortfolios.FirstOrDefault(p => p.Name == PortfolioName);
-        holdings = curPortfolio.Holdings;
+        holdings = curPortfolio.Holdings.Where(h => !h.IsSold).ToList();
         if (holdings.Count < 1)
         {
             isEmpty = true;
@@ -153,6 +168,7 @@ else
         {
             holdings.Remove(equity);
             curPortfolio.Holdings = holdings;
+            ReCalculate();
             await PortfolioRepository.AddUpdate(curPortfolio);
 
             await stocksGrid.Reload();
@@ -181,8 +197,6 @@ else
             existingHolding.CostPerShare = (existingHolding.TotalCost / existingHolding.Quantity);
             existingHolding.MarketValue = (existingHolding.Quantity * existingHolding.CurrentPrice);
             existingHolding.GainLoss = ((existingHolding.MarketValue - existingHolding.TotalCost) / existingHolding.TotalCost);
-            curPortfolio.TotalValue += existingHolding.MarketValue;
-            curPortfolio.NetValue += (existingHolding.MarketValue - existingHolding.TotalCost);
             holdings.Add(existingHolding);
         }
         else
@@ -192,15 +206,12 @@ else
             equity.CurrentPrice = eqInfo.CurrentPrice;
             equity.Industry = eqInfo.Industry;
             equity.Name = eqInfo.Name;
-            equity.TotalCost = (equity.Quantity * equity.CostPerShare);
-            equity.MarketValue = (equity.Quantity * equity.CurrentPrice);
-            equity.GainLoss = ((equity.MarketValue - equity.TotalCost) / equity.TotalCost);
-            curPortfolio.TotalValue += equity.MarketValue;
-            curPortfolio.NetValue += (equity.MarketValue - equity.TotalCost);
+            Calculate(ref equity);
             holdings.Add(equity);
         }
 
         curPortfolio.Holdings = holdings;
+        ReCalculate();
         await PortfolioRepository.AddUpdate(curPortfolio);
     }
 
@@ -210,17 +221,62 @@ else
         isEmpty = false;
 
         EquityInfo eqInfo = await StockDataService.GetEquityInfo(equity.Symbol);
+        //delete existing
+        var existingHolding = holdings.FirstOrDefault(e => e.Symbol == equity.Symbol);
+        holdings.Remove(existingHolding);
+        //update
         equity.CurrentPrice = eqInfo.CurrentPrice;
         equity.Industry = eqInfo.Industry;
         equity.Name = eqInfo.Name;
-        equity.TotalCost = (equity.Quantity * equity.CostPerShare);
-        equity.MarketValue = (equity.Quantity * equity.CurrentPrice);
-        equity.GainLoss = ((equity.MarketValue - equity.TotalCost) / equity.TotalCost);
-        curPortfolio.TotalValue += equity.MarketValue;
-        curPortfolio.NetValue += (equity.MarketValue - equity.TotalCost);
+        Calculate(ref equity);
         holdings.Add(equity);
 
         curPortfolio.Holdings = holdings;
+        ReCalculate();
+        await PortfolioRepository.AddUpdate(curPortfolio);
+    }
+
+    void ReCalculate()
+    {
+        var totalVal = 0.0;
+        var totalPnL = 0.0;
+        var totalCost = 0.0;
+
+        foreach (var holding in curPortfolio.Holdings)
+        {
+            totalVal += holding.MarketValue;
+            totalPnL += holding.MarketValue - holding.TotalCost;
+            totalCost += holding.TotalCost;
+        }
+
+        curPortfolio.TotalValue = totalVal;
+        curPortfolio.NetValue = totalPnL;
+        curPortfolio.Gain = totalPnL / totalCost;
+    }
+
+    void Calculate(ref Equity equity)
+    {
+        equity.TotalCost = (equity.Quantity * equity.CostPerShare);
+        equity.MarketValue = (equity.Quantity * equity.CurrentPrice);
+        equity.GainLoss = ((equity.MarketValue - equity.TotalCost) / equity.TotalCost);
+    }
+
+    async Task GetLatest()
+    {
+        var eqInfo = new EquityInfo();
+        foreach (var holding in holdings)
+        {
+            var existingHolding = holdings.FirstOrDefault(e => e.Symbol == holding.Symbol);
+            holdings.Remove(existingHolding);
+
+            var equity = holding;
+            eqInfo = await StockDataService.GetEquityInfo(equity.Symbol);
+            equity.CurrentPrice = eqInfo.CurrentPrice;
+            Calculate(ref equity);
+            holdings.Add(equity);
+        }
+        curPortfolio.Holdings = holdings;
+        ReCalculate();
         await PortfolioRepository.AddUpdate(curPortfolio);
     }
 }

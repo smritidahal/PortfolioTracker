@@ -14,6 +14,9 @@ namespace PortfolioTracker.Database.DataModels
         [JsonProperty("netValue")]
         public double NetValue { get; set; }
 
+        [JsonProperty("gain")]
+        public double Gain { get; set; }
+
         [JsonProperty("holdings")]
         public IList<Equity> Holdings { get; set; }
     }
