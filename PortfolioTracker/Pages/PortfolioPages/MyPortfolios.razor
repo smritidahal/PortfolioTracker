@@ -1,0 +1,65 @@
+﻿@page "/MyPortfolios"
+
+@using System.Globalization
+@using PortfolioTracker.Pages.PortfolioViews
+@using PortfolioTracker.Database.DataModels
+@inject PortfolioTracker.Database.Repositories.IRepository<Portfolio> PortfolioRepository
+@inject DialogService dialogService
+@inject NavigationManager uriHelper
+
+
+@if (portfolios == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="row">
+        <div class="col-md-12">
+            <RadzenButton Text="Create New Portfolio" Style="margin-right:1rem" ButtonStyle="ButtonStyle.Light" class="btnMedium"
+                          Click="@(args => dialogService.Open<CreatePortfolioView>("Create A New Portfolio", null, new DialogOptions() { Width = "600px", Height = "200px" }))" />
+
+            <RadzenDataList WrapItems="false" AllowPaging="false" Data="portfolios" TItem="Portfolio">
+                <Template Context="portfolio">
+                    <RadzenCard Style="width:100%; height:300px; cursor:pointer" @onclick="@(args => ViewPortfolio(portfolio.Name))">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <h2>@portfolio.Name</h2>
+                                <p>Total Value: @String.Format("{0:C2}", portfolio.TotalValue)</p>
+                                <p>Total Profit/Loss: @String.Format("{0:$#,##0.00}", portfolio.NetValue)@String.Format("({0:P})", portfolio.Gain)</p>
+                            </div>
+                            <div class="col-md-4">
+                                <RadzenChart ColorScheme="colorScheme">
+                                    <RadzenPieSeries Data="portfolio.Holdings.GroupBy(e => e.Industry, e => e.PortfolioDiversity, (industry, pDiversity) => new { Eindustry = industry, Ediversity = Convert.ToDecimal(Math.Round((pDiversity.ToList().Sum()*100),2))})"
+                                                     Title="Portfolio Diversity (%)" CategoryProperty="Eindustry" ValueProperty="Ediversity" />
+                                </RadzenChart>
+                            </div>
+                        </div>
+                    </RadzenCard>
+                </Template>
+            </RadzenDataList>
+        </div>
+    </div>
+}
+
+@code {
+
+    IEnumerable<Portfolio> portfolios = new List<Portfolio>();
+    private string createButtonClass { get; set; }
+    ColorScheme colorScheme = ColorScheme.Palette;
+
+    protected override async Task OnInitializedAsync()
+    {
+        portfolios = await PortfolioRepository.GetList();
+    }
+
+    void ViewPortfolio(string portfolioName)
+    {
+        uriHelper.NavigateTo($"/Portfolio/{portfolioName}");
+    }
+
+    string FormatAsUSD(object value)
+    {
+        return ((double)value).ToString("C0", CultureInfo.CreateSpecificCulture("en-US"));
+    }
+}
