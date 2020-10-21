@@ -10,7 +10,7 @@
 @if (curPortfolio != null)
 {
     <h3>Total Value: @String.Format("{0:C2}", curPortfolio.TotalValue)</h3>
-    <h3>Total Profit/Loss: @String.Format("{0:C2}", curPortfolio.NetValue)@String.Format("({0:P})", curPortfolio.Gain)</h3>
+    <h3>Total Profit/Loss: @String.Format("{0:$#,##0.00}", curPortfolio.NetValue)@String.Format("({0:P})", curPortfolio.Gain)</h3>
 }
 
 <RadzenButton ButtonStyle="ButtonStyle.Light" class="btnSmall" Click="@InsertRow"> Add <RadzenIcon Icon="add_circle_outline" Style="color:dimgrey; font-size:medium" /></RadzenButton>
@@ -96,6 +96,12 @@ else
                 </Template>
             </RadzenGridColumn>
 
+            <RadzenGridColumn Width="150px" TItem="Equity" Property="PortfolioDiversity" Title="Portfolio Diversity">
+                <Template Context="equity">
+                    <span style='color:green'>@String.Format("{0:P}", equity.PortfolioDiversity)</span>
+                </Template>
+            </RadzenGridColumn>
+
             <RadzenGridColumn Width="150px" TItem="Equity" Property="Industry" Title="Industry">
                 <EditTemplate Context="equity">
                     <RadzenTextBox @bind-Value="equity.Industry" Style="width:100%" />
@@ -156,6 +162,10 @@ else
                 EquityType = EquityType.Other
             };
             holdings.Add(defaultEquity);
+        }
+        else
+        {
+            await GetLatest();
         }
     }
 
@@ -264,6 +274,16 @@ else
         curPortfolio.TotalValue = totalVal;
         curPortfolio.NetValue = totalPnL;
         curPortfolio.Gain = totalPnL / totalCost;
+
+        CalculatePortfolioDiversity();
+    }
+
+    void CalculatePortfolioDiversity()
+    {
+        foreach (var holding in curPortfolio.Holdings)
+        {
+            holding.PortfolioDiversity = holding.MarketValue / curPortfolio.TotalValue;
+        }
     }
 
     void Calculate(ref Equity equity)

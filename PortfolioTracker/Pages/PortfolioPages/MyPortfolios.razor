@@ -26,12 +26,12 @@ else
                             <div class="col-md-3">
                                 <h2>@portfolio.Name</h2>
                                 <p>Total Value: @String.Format("{0:C2}", portfolio.TotalValue)</p>
-                                <p>Total Profit/Loss: @String.Format("{0:C2}", portfolio.NetValue)@String.Format("({0:P})", portfolio.Gain)</p>
+                                <p>Total Profit/Loss: @String.Format("{0:$#,##0.00}", portfolio.NetValue)@String.Format("({0:P})", portfolio.Gain)</p>
                             </div>
                             <div class="col-md-4">
                                 <RadzenChart ColorScheme="colorScheme">
-                                    <RadzenPieSeries Data="portfolio.Holdings.GroupBy(e => e.Industry, e => e.MarketValue, (industry, marketValue) => new {Eindustry = industry, EmarketValue =  Math.Round((decimal)marketValue.ToList().Sum(), 2)})"
-                                                     Title="Total Market Value" CategoryProperty="Eindustry" ValueProperty="EmarketValue" />
+                                    <RadzenPieSeries Data="portfolio.Holdings.GroupBy(e => e.Industry, e => e.PortfolioDiversity, (industry, pDiversity) => new { Eindustry = industry, Ediversity = Convert.ToDecimal(Math.Round((pDiversity.ToList().Sum()*100),2))})"
+                                                     Title="Portfolio Diversity (%)" CategoryProperty="Eindustry" ValueProperty="Ediversity" />
                                 </RadzenChart>
                             </div>
                         </div>

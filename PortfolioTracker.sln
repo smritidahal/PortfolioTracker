@@ -5,7 +5,7 @@ VisualStudioVersion = 16.0.30413.136
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PortfolioTracker", "PortfolioTracker\PortfolioTracker.csproj", "{5A5F3F5E-1076-4D28-817A-9B331A597B74}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PortfolioTracker.Database", "PortfolioTracker.Database\PortfolioTracker.Database.csproj", "{539BBFD4-80EE-4ABF-9027-A3EF94F77037}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PortfolioTracker.Database", "PortfolioTracker.Database\PortfolioTracker.Database.csproj", "{539BBFD4-80EE-4ABF-9027-A3EF94F77037}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
