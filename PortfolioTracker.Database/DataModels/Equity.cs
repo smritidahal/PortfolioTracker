@@ -34,13 +34,7 @@ namespace PortfolioTracker.Database.DataModels
         [JsonProperty("PortfolioDiversity")]
         public double PortfolioDiversity { get; set; }
 
-        [JsonProperty("sellPrice")]
-        public float SellPrice { get; set; }
-
         [JsonProperty("industry")]
         public string Industry { get; set; }
-
-        [JsonProperty("isSold")]
-        public bool IsSold { get; set; }
     }
 }
