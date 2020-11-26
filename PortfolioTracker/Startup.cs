@@ -74,7 +74,7 @@ namespace PortfolioTracker
             var authorizedTenants = tickerRepo.GetList().GetAwaiter().GetResult();
             if (!authorizedTenants.Any())
             {
-                tickerRepo.AddUpdate(new Equity() {Name = "Apple", Symbol = "AAPL", Quantity = 18, CostPerShare = 113.44, CurrentPrice = 118.72, IsSold = false, Industry = "Consumer Electronics"}).GetAwaiter().GetResult();
+                tickerRepo.AddUpdate(new Equity() {Name = "Apple", Symbol = "AAPL", Quantity = 18, CostPerShare = 113.44, CurrentPrice = 118.72, Industry = "Consumer Electronics"}).GetAwaiter().GetResult();
             }
         }
     }

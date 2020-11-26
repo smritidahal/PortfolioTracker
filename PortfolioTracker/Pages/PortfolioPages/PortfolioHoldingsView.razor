@@ -132,8 +132,8 @@ else
 }
 
 @code {
-    [Parameter]
-    public string PortfolioName { get; set; }
+        [Parameter]
+        public string PortfolioName { get; set; }
 
     private Portfolio curPortfolio { get; set; }
 
@@ -149,7 +149,7 @@ else
     {
         var allPortfolios = await PortfolioRepository.GetList();
         curPortfolio = allPortfolios.FirstOrDefault(p => p.Name == PortfolioName);
-        holdings = curPortfolio.Holdings.Where(h => !h.IsSold).ToList();
+        holdings = curPortfolio.Holdings.ToList();
         if (holdings.Count < 1)
         {
             isEmpty = true;
@@ -209,27 +209,37 @@ else
     async Task OnCreateRow(Equity equity)
     {
         isEmpty = false;
-        if (holdings.Any(e => e.Symbol == equity.Symbol))
+
+        if (equity.EquityType == EquityType.Cash)
         {
-            //update existing holding
-            var existingHolding = holdings.FirstOrDefault(e => e.Symbol == equity.Symbol);
-            await DeleteRow(equity);
-            existingHolding.Quantity += equity.Quantity;
-            existingHolding.TotalCost += (equity.Quantity * equity.CostPerShare);
-            existingHolding.CostPerShare = (existingHolding.TotalCost / existingHolding.Quantity);
-            existingHolding.MarketValue = (existingHolding.Quantity * existingHolding.CurrentPrice);
-            existingHolding.GainLoss = ((existingHolding.MarketValue - existingHolding.TotalCost) / existingHolding.TotalCost);
-            holdings.Add(existingHolding);
+            equity.Industry = "Cash";
+            equity.MarketValue = equity.CostPerShare;
+            holdings.Add(equity);
         }
         else
         {
-            //create new holding
-            EquityInfo eqInfo = await StockDataService.GetEquityInfo(equity.Symbol);
-            equity.CurrentPrice = eqInfo.CurrentPrice;
-            equity.Industry = eqInfo.Industry;
-            equity.Name = eqInfo.Name;
-            Calculate(ref equity);
-            holdings.Add(equity);
+            if (holdings.Any(e => e.Symbol == equity.Symbol))
+            {
+                //update existing holding
+                var existingHolding = holdings.FirstOrDefault(e => e.Symbol == equity.Symbol);
+                await DeleteRow(equity);
+                existingHolding.Quantity += equity.Quantity;
+                existingHolding.TotalCost += (equity.Quantity * equity.CostPerShare);
+                existingHolding.CostPerShare = (existingHolding.TotalCost / existingHolding.Quantity);
+                existingHolding.MarketValue = (existingHolding.Quantity * existingHolding.CurrentPrice);
+                existingHolding.GainLoss = ((existingHolding.MarketValue - existingHolding.TotalCost) / existingHolding.TotalCost);
+                holdings.Add(existingHolding);
+            }
+            else
+            {
+                //create new holding
+                EquityInfo eqInfo = await StockDataService.GetEquityInfo(equity.Symbol);
+                equity.CurrentPrice = eqInfo.CurrentPrice;
+                equity.Industry = eqInfo.Industry;
+                equity.Name = eqInfo.Name;
+                Calculate(ref equity);
+                holdings.Add(equity);
+            }
         }
 
         curPortfolio.Holdings = holdings;
@@ -241,18 +251,24 @@ else
     async Task OnUpdateRow(Equity equity)
     {
         isEmpty = false;
-
-        EquityInfo eqInfo = await StockDataService.GetEquityInfo(equity.Symbol);
-        //delete existing
-        var existingHolding = holdings.FirstOrDefault(e => e.Symbol == equity.Symbol);
-        holdings.Remove(existingHolding);
-        //update
-        equity.CurrentPrice = eqInfo.CurrentPrice;
-        equity.Industry = existingHolding.Industry;
-        equity.Name = existingHolding.Name;
-        Calculate(ref equity);
-        holdings.Add(equity);
-
+        if (equity.EquityType == EquityType.Cash)
+        {
+            equity.MarketValue = equity.CostPerShare;
+            holdings.Add(equity);
+        }
+        else
+        {
+            EquityInfo eqInfo = await StockDataService.GetEquityInfo(equity.Symbol);
+            //delete existing
+            var existingHolding = holdings.FirstOrDefault(e => e.Symbol == equity.Symbol);
+            holdings.Remove(existingHolding);
+            //update
+            equity.CurrentPrice = eqInfo.CurrentPrice;
+            equity.Industry = existingHolding.Industry;
+            equity.Name = existingHolding.Name;
+            Calculate(ref equity);
+            holdings.Add(equity);
+        }
         curPortfolio.Holdings = holdings;
         ReCalculate();
         await PortfolioRepository.AddUpdate(curPortfolio);
@@ -267,8 +283,11 @@ else
         foreach (var holding in curPortfolio.Holdings)
         {
             totalVal += holding.MarketValue;
-            totalPnL += holding.MarketValue - holding.TotalCost;
-            totalCost += holding.TotalCost;
+            if (holding.EquityType != EquityType.Cash)
+            {
+                totalPnL += holding.MarketValue - holding.TotalCost;
+                totalCost += holding.TotalCost;
+            }
         }
 
         curPortfolio.TotalValue = totalVal;
@@ -299,11 +318,18 @@ else
         var newHoldings = new List<Equity>();
         foreach (var holding in holdings)
         {
-            var equity = holding;
-            eqInfo = await StockDataService.GetEquityInfo(equity.Symbol);
-            equity.CurrentPrice = eqInfo.CurrentPrice;
-            Calculate(ref equity);
-            newHoldings.Add(equity);
+            if (holding.EquityType != EquityType.Cash)
+            {
+                var equity = holding;
+                eqInfo = await StockDataService.GetEquityInfo(equity.Symbol);
+                equity.CurrentPrice = eqInfo.CurrentPrice;
+                Calculate(ref equity);
+                newHoldings.Add(equity);
+            }
+            else
+            {
+                newHoldings.Add(holding);
+            }
         }
         holdings = newHoldings;
         curPortfolio.Holdings = holdings;
